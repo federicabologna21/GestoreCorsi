@@ -5,7 +5,11 @@
 package it.polito.tdp.corsi;
 
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
+
+import it.polito.tdp.corsi.model.Corso;
 import it.polito.tdp.corsi.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -47,11 +51,87 @@ public class FXMLController {
     @FXML
     void corsiPerPeriodo(ActionEvent event) {
     	
+    	//(6) 
+    	
+    	
+    	// CONTROLLI DA FARE SEMPRE
+    	// all'inizio ripulisco il risultato per sicurezza
+    	txtRisultato.clear(); 
+    	
+    	// RECUPERIAMO INPUT utente --> periodo didattico
+    	String periodoStringa = txtPeriodo.getText();	
+    	
+    	// CONTROLLO che sia un PERIODO VALIDO --> IMPORTANTE, FARLO SEMPRE!! 
+    	// C'E' SEMPRE QUANDO IL PERIODO E' NUMERICO!!! 
+    	Integer periodo;
+    	try {
+    		periodo = Integer.parseInt(periodoStringa);
+    	}catch (NumberFormatException ne) {
+    		txtRisultato.setText("Devi inserire un numero (1 o 2) per il periodo didattico");
+    		return; // importante mettere il return perchè non posso piuù andare avanti
+    	}catch (NullPointerException npe) { 
+    		// CONTROLLO che la STRINGA NON SIA NULLA
+    		txtRisultato.setText("Devi inserire un numero (1 o 2) per il periodo didattico");
+    		return;
+    	}
+    	
+    	// CONTROLLO che il PERIODO RISPETTI I VINCOLI 
+    	if (periodo <1 || periodo >2) {
+    		txtRisultato.setText("Devi inserire un numero (1 o 2) per il periodo didattico");
+    		return;
+    	}
+    	
+    	// richiamo passando da model il metodo del DAO
+    	List<Corso> corsi = this.model.getCorsiByPeriodo(periodo);
+    	
+    	// SCORRO LA LISTA E RIEMPIO IL RISULTATO
+    	for (Corso c: corsi) {
+    		txtRisultato.appendText(c.toString() + "\n");
+    	}
+    	
     }
 
     @FXML
     void numeroStudenti(ActionEvent event) {
     	
+    	//(9)
+    	
+    	txtRisultato.clear(); 
+    	
+    	// CONTROLLI DA FARE SEMPRE
+    	// all'inizio ripulisco il risultato per sicurezza
+    	txtRisultato.clear(); 
+    	
+    	// RECUPERIAMO INPUT utente --> periodo didattico
+    	String periodoStringa = txtPeriodo.getText();
+    	
+    	// CONTROLLO che sia un PERIODO VALIDO --> IMPORTANTE, FARLO SEMPRE!! 
+    	// C'E' SEMPRE QUANDO IL PERIODO E' NUMERICO!!! 
+    	Integer periodo;
+    	try {
+    		periodo = Integer.parseInt(periodoStringa);
+    	}catch (NumberFormatException ne) {
+    		txtRisultato.setText("Devi inserire un numero (1 o 2) per il periodo didattico");
+    		return; // importante mettere il return perchè non posso piuù andare avanti
+    	}catch (NullPointerException npe) { 
+    		// CONTROLLO che la STRINGA NON SIA NULLA
+    		txtRisultato.setText("Devi inserire un numero (1 o 2) per il periodo didattico");
+    		return;
+    	}
+    	
+    	// CONTROLLO che il PERIODO RISPETTI I VINCOLI 
+    	if (periodo <1 || periodo >2) {
+    		txtRisultato.setText("Devi inserire un numero (1 o 2) per il periodo didattico");
+    		return;
+    	}
+    	
+    	Map <Corso, Integer> corsiIscrizioni = this.model.getIscrittiByPeriodo(periodo);
+    	
+    	for (Corso c: corsiIscrizioni.keySet()) {
+    		txtRisultato.appendText(c.toString());
+    		Integer n = corsiIscrizioni.get(c);
+    		txtRisultato.appendText("\t" + n + "\n"); // t da una tabulazione
+    	}
     }
 
     @FXML
