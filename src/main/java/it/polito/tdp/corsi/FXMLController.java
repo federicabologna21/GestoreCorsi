@@ -11,6 +11,7 @@ import java.util.ResourceBundle;
 
 import it.polito.tdp.corsi.model.Corso;
 import it.polito.tdp.corsi.model.Model;
+import it.polito.tdp.corsi.model.Studente;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -85,9 +86,31 @@ public class FXMLController {
     	List<Corso> corsi = this.model.getCorsiByPeriodo(periodo);
     	
     	// SCORRO LA LISTA E RIEMPIO IL RISULTATO
-    	for (Corso c: corsi) {
+    	/*for (Corso c: corsi) {
     		txtRisultato.appendText(c.toString() + "\n");
+    	}*/
+    	
+    	
+    	
+    	// PER METTERE GLI ELEMENTI IN COLONNA ORDINATA
+    	// RICORDA NEL SET MODEL DI AGGIUNGERE!!
+    	StringBuilder sb = new StringBuilder();
+    	for (Corso c: corsi) {
+    		
+    		// mettere sempre il &
+    		// il meno intende l'allineamento a sinistra
+    		// il numero indica la dimensione massima del campo 
+    		// ( si mette il numero massimo di caratteri che può 
+    		// avere l'attributo)
+    		// l'ultima lettere indica che cosa vado a inserire
+    		// (s --> stringa, d --> intero)
+    		sb.append(String.format("%-8s", c.getCodins()));
+    		sb.append(String.format("%-4d", c.getCrediti()));
+    		sb.append(String.format("%-50s", c.getNome()));
+    		sb.append(String.format("%-4d\n", c.getPd()));
+    		
     	}
+    	txtRisultato.appendText(sb.toString());
     	
     }
 
@@ -136,11 +159,60 @@ public class FXMLController {
 
     @FXML
     void stampaDivisione(ActionEvent event) {
+    	
+    	txtRisultato.clear();
+    	
+    	String codice = txtCorso.getText();
+    	
+    	if (!model.esisteCorso(codice)) {
+    		txtRisultato.setText("Il corso non esiste");
+    		return;
+    	}
 
+    	Map <String, Integer> divisione = model.getDivisioneCDS(codice);
+    	
+    	for(String cds: divisione.keySet()) {
+    		txtRisultato.appendText(cds+" "+ divisione.get(cds)+"\n");
+    	}
     }
 
     @FXML
     void stampaStudenti(ActionEvent event) {
+    	
+    	txtRisultato.clear();
+    	
+    	String codice = txtCorso.getText();
+    	
+    	// NON ABBIAMO NESSUN CONTROLLO DA FARE
+    	
+    	
+    	List<Studente> studenti = this.model.getStudentiCorso(codice);
+    	
+    	// se l'utente scrive un CODICE CHE NON ESISTE 
+    	// la lista sara vuota perche il metodo nel while
+    	// non riempie niente
+    	
+    	// SE LA LISTA E' VUOTA PU' ESSERE PERCHE' IL 
+    	// CORSO NON ESISTE O SE E' PERCHE' NESSUNO STUDENTE 
+    	// E' ISCRITTO
+    	
+    	
+    	// CONTROLLO SE IL CORSO ESISTE
+    	// COSTRUENDO UN METODO 
+    	if (!model.esisteCorso(codice)) {
+    		txtRisultato.setText("Il corso non esiste");
+    		return;
+    	}
+    	
+    	if (studenti.size()==0) {
+    		txtRisultato.setText("Il corso non ha iscritti");
+    		return;
+    	}
+    	
+    	for (Studente s: studenti) {
+    		txtRisultato.appendText(s + "\n");
+    	}
+    	
 
     }
 
@@ -158,6 +230,8 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	// SPECIFICARE LO STILE DEL CARATTERE --> sempre questo!
+    	txtRisultato.setStyle("-fx-font-family: monospace");
     }
     
     

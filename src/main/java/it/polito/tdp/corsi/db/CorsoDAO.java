@@ -6,10 +6,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import it.polito.tdp.corsi.model.Corso;
+import it.polito.tdp.corsi.model.Studente;
 
 public class CorsoDAO {
 	
@@ -135,6 +137,107 @@ public class CorsoDAO {
 		return result;
 
 	// COLLEGO IL METODO AL MODEL (8)
+	}
+	
+	/**
+	 * RICHIESTA 3
+	 * ELENCARE TUTTI GLI STUDENTI DI UN DETERMINATO CORSO 
+	 */
+	
+	public List<Studente> getStudentiCorso (Corso corso){
+		
+		String sql = "SELECT  s.matricola, s.nome, s.cognome, s.cds "
+				+ "FROM studente s, iscrizione i "
+				+ "WHERE i.matricola = s.matricola AND i.codins = ?";
+		List<Studente> studentiCorso = new LinkedList<Studente>();
+		
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql); 
+			st.setString(1, corso.getCodins()); 
+			
+			ResultSet rs = st.executeQuery();
+			
+			while (rs.next()) {
+				
+				Studente s = new Studente (rs.getInt("matricola"), rs.getString("nome"), rs.getString("cognome"), rs.getString("cds"));
+				
+				
+				studentiCorso.add(s);
+			}
+			rs.close();
+			st.close();
+			conn.close();
+		}catch(SQLException e) {
+			throw new RuntimeException (e);
+		}
+		return studentiCorso;
+		
+	}
+
+	// CREO UN METODO PER VERIFICARE SE IL CORSO ESISTE
+	public boolean esisteCorso(Corso corso) {
+		
+		String sql = " SELECT * FROM corso WHERE codins=?";
+		
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql); 
+			st.setString(1, corso.getCodins()); 
+			
+			ResultSet rs = st.executeQuery();
+			
+			// --> IL METODO RITORNA VERO SE C'E' UN RISULTATO
+			// USIAMO IF PERCHE' AL MASSIMO C'E' SOLO UN RISULTATO
+			if (rs.next()) {
+				rs.close(); // RICORDA DI CHIUDERE SIA
+				st.close(); // IN QUESTA RETURN CHE IN QUELLA DOPO
+				conn.close();
+				return true;
+			} else {
+				rs.close();
+				st.close();
+				conn.close();
+				return false; // NON C'E' NESSUN ELEMENTO 
+			}
+		}catch(SQLException e) {
+			throw new RuntimeException (e);
+		}
+		
+	}
+	
+	// CREO UN METODO CHE RITORNA UNA MAPPA CON 
+	// SUDDIVISIONE DI STUDENTI PER CDS DATO UN CORSO
+	public Map <String, Integer> getDivisioneStudenti(Corso corso){
+		
+		// ho bisogno di un contatore --> COUNT(*) AS tot
+		// escludo gli studenti con stringa cds vuota --> s,cds<>''
+		// metto una GROUP BY per raggruppare per cds 
+		String sql ="SELECT s.cds, COUNT(*) AS tot "
+				+ "FROM studente s, iscrizione i "
+				+ "WHERE s.matricola = i.matricola AND i.codins = ? AND s.cds <> '' "
+				+ "GROUP BY s.CDS";
+		
+		Map <String, Integer> result = new HashMap<String, Integer>();
+		
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql); 
+			st.setString(1, corso.getCodins()); 
+			
+			ResultSet rs = st.executeQuery();
+			
+			while (rs.next()) {
+				result.put(rs.getString("cds"), rs.getInt("tot"));
+				
+			}
+			rs.close();
+			st.close();
+			conn.close();
+		}catch(SQLException e) {
+			throw new RuntimeException (e);
+		}
+		return result;
 	}
 	
 }
